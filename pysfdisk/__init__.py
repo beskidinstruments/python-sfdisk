@@ -15,6 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with pysfdisk.  If not, see <http://www.gnu.org/licenses/>
 
-from pysfdisk.block_device import BlockDevice
-from pysfdisk.partition import Partition
 import pysfdisk.errors
+from pysfdisk.partition import Partition
+from pysfdisk.block_device import BlockDevice

@@ -17,24 +17,24 @@
 
 
 class PysfdiskException(Exception):
-    """Base exception for pysfdisk"""
+    """Base exception for pysfdisk."""
 
     pass
 
 
 class NotRunningAsRoot(PysfdiskException):
-    """Command is not running as root"""
+    """Command is not running as root."""
 
     pass
 
 
 class BlockDeviceDoesNotExist(PysfdiskException):
-    """Block device does not exist"""
+    """Block device does not exist."""
 
     pass
 
 
 class MissingAttribute(PysfdiskException):
-    """A required attribute has not been set"""
+    """A required attribute has not been set."""
 
     pass
