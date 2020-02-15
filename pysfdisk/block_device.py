@@ -51,7 +51,7 @@ class BlockDevice:
         command_list = [self.SFDISK_EXECUTABLE, "--json", self.path]
         if self.use_sudo:
             command_list.insert(0, "sudo")
-        disk_config = json.loads(subprocess.check_output(command_list))
+        disk_config = json.loads(subprocess.check_output(command_list, shell=False))
         self.label = disk_config["partitiontable"]["label"] or None
         self.uuid = disk_config["partitiontable"]["id"] or None
 
