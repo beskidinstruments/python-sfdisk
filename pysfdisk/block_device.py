@@ -17,16 +17,35 @@
 
 import os
 import json
+import pathlib
 import subprocess
 
 from pysfdisk.errors import NotRunningAsRoot, BlockDeviceDoesNotExist
 from pysfdisk.partition import Partition
 
 
+def find_executable(name: str) -> str:
+    """
+    Return valid executable path for provided name.
+
+    :param name: binary, executable name
+    :return: Return the string representation of the path with forward (/) slashes.
+
+    """
+
+    standard_executable_paths = ["/bin", "/sbin", "/usr/local/bin", "/usr/local/sbin"]
+
+    for path in standard_executable_paths:
+        executable_path = pathlib.Path(path) / name
+        if executable_path.exists():
+            return executable_path.as_posix()
+
+
 class BlockDevice:
     """Provide interface to obtain and set partition tables."""
 
-    SFDISK_EXECUTABLE = "/sbin/sfdisk"
+    SFDISK_EXECUTABLE = find_executable(name="sfdisk")
+    DD_EXECUTABLE = find_executable(name="dd")
 
     def __init__(self, path, use_sudo=False):
         """Set member variables, perform checks and obtain the initial
