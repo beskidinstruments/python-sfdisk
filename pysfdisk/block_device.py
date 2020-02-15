@@ -46,6 +46,15 @@ class BlockDevice:
         """Return the partition objects for the block object."""
         return self.partitions
 
+    def dump_partition_table(self):
+        """Dump partition table to string."""
+        command_list = [self.SFDISK_EXECUTABLE, "-d", self.path]
+        if self.use_sudo:
+            command_list.insert(0, "sudo")
+        process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=None, shell=False)
+        partition_table = process.communicate()[0]
+        return partition_table.decode()
+
     def _read_partition_table(self):
         """Create the partition table using sfdisk and load partitions."""
         command_list = [self.SFDISK_EXECUTABLE, "--json", self.path]
