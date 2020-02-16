@@ -101,6 +101,52 @@ class BlockDevice:
         save_mbr = subprocess.run(command_list, stdout=PIPE, stderr=PIPE, check=True)  # nosec # noqa: S603,DUO116
         return save_mbr.check_returncode()
 
+    def dump_partitions(self, directory: str) -> dict:
+        """
+        Create backup of the partition to file via partclone.
+
+        :param directory: The directory path to which partition backup will be saved
+        :return: dict which contains name of partition and file path to which backup was saved
+
+        """
+        command_list = []
+        destination_files = {}
+
+        partitions_list = self.get_fs_types()
+        for partition, fs_type in partitions_list.items():
+            if fs_type == "vfat":
+                command_list = [
+                    find_executable(name=f"partclone.fat"),
+                    "-I",
+                    "-F",
+                    "-d",
+                    "-c",
+                    "-s",
+                    f"/dev/{partition}",
+                    "-o",
+                    f"{directory}/{partition}",
+                ]
+            elif fs_type == "ext4":
+                command_list = [
+                    find_executable(name=f"partclone.{fs_type}"),
+                    "-d",
+                    "-c",
+                    "-s",
+                    f"/dev/{partition}",
+                    "-o",
+                    f"{directory}/{partition}",
+                ]
+            destination_files[partition] = f"{directory}/{partition}"
+
+            if self.use_sudo:
+                command_list.insert(0, self.SUDO_EXEC)
+                subprocess.run(command_list, check=True)  # nosec # noqa: S603,DUO116
+
+                # pylint: disable=line-too-long
+                subprocess.check_output([self.SUDO_EXEC, "chmod", "644", f"{directory}/{partition}"])  # nosec # noqa: S603,DUO116
+
+        return destination_files
+
     def _umount_partitions(self) -> None:
         """
         Umount mounted partition to allow it to be processed by partclone or dd.
