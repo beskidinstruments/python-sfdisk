@@ -19,22 +19,26 @@
 class PysfdiskException(Exception):
     """Base exception for pysfdisk."""
 
+    # pylint: disable=unnecessary-pass
     pass
 
 
 class NotRunningAsRoot(PysfdiskException):
     """Command is not running as root."""
 
+    # pylint: disable=unnecessary-pass
     pass
 
 
 class BlockDeviceDoesNotExist(PysfdiskException):
     """Block device does not exist."""
 
+    # pylint: disable=unnecessary-pass
     pass
 
 
 class MissingAttribute(PysfdiskException):
     """A required attribute has not been set."""
 
+    # pylint: disable=unnecessary-pass
     pass
