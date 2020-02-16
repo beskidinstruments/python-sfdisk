@@ -1,3 +1,6 @@
+# pylint: skip-file
+# flake8: noqa
+
 # Copyright (c) 2016 - Matt Comben
 #
 # This file is part of pysfdisk.

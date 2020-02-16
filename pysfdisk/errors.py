@@ -1,3 +1,5 @@
+"""Container for custom errors."""
+
 # Copyright (c) 2016 - Matt Comben
 #
 # This file is part of pysfdisk.

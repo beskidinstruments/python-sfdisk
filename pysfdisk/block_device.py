@@ -1,3 +1,10 @@
+"""
+Code for handling block device.
+
+Providing data about partition types, filesystem, create backup of mbr, partition schema, dumping data to file.
+
+"""
+
 # Copyright (c) 2016 - Matt Comben
 #
 # This file is part of pysfdisk.
@@ -18,14 +25,15 @@
 import os
 import json
 import pathlib
-import subprocess
+import subprocess  # nosec # noqa: S404
 from typing import Union
+from subprocess import PIPE, DEVNULL  # nosec # noqa: S404
 
 from pysfdisk.errors import NotRunningAsRoot, BlockDeviceDoesNotExist
 from pysfdisk.partition import Partition
 
 
-def find_executable(name: str) -> Union[str, None]:
+def find_executable(name: str) -> Union[str, classmethod]:
     """
     Return valid executable path for provided name.
 
@@ -33,14 +41,14 @@ def find_executable(name: str) -> Union[str, None]:
     :return: Return the string representation of the path with forward (/) slashes.
 
     """
-    standard_executable_paths = ["/bin", "/sbin", "/usr/local/bin", "/usr/local/sbin"]
+    standard_executable_paths = ["/bin", "/sbin", "/usr/local/bin", "/usr/local/sbin", "/usr/bin", "/usr/sbin"]
 
     for path in standard_executable_paths:
         executable_path = pathlib.Path(path) / name
         if executable_path.exists():
             return executable_path.as_posix()
 
-    return None
+    return FileNotFoundError
 
 
 class BlockDevice:
@@ -49,6 +57,8 @@ class BlockDevice:
     SFDISK_EXECUTABLE = find_executable(name="sfdisk")
     DD_EXECUTABLE = find_executable(name="dd")
     LSBLK_EXECUTABLE = find_executable(name="lsblk")
+    PXZ_EXECUTABLE = find_executable(name="pxz")
+    SUDO_EXEC = find_executable(name="sudo")
 
     def __init__(self, path, use_sudo=False):
         """Set member variables, perform checks and obtain the initial partition table."""
@@ -72,8 +82,8 @@ class BlockDevice:
         """Dump partition table to string."""
         command_list = [self.SFDISK_EXECUTABLE, "-d", self.path]
         if self.use_sudo:
-            command_list.insert(0, "sudo")
-        process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=None, shell=False)
+            command_list.insert(0, self.SUDO_EXEC)
+        process = subprocess.Popen(command_list, stdout=PIPE)  # nosec # noqa: S603,DUO116
         partition_table = process.communicate()[0]
         return partition_table.decode()
 
@@ -87,8 +97,8 @@ class BlockDevice:
         """
         command_list = [self.DD_EXECUTABLE, f"if={self.path}", f"of={destination_file}", "bs=512", "count=1"]
         if self.use_sudo:
-            command_list.insert(0, "sudo")
-        save_mbr = subprocess.run(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+            command_list.insert(0, self.SUDO_EXEC)
+        save_mbr = subprocess.run(command_list, stdout=PIPE, stderr=PIPE, check=True)  # nosec # noqa: S603,DUO116
         return save_mbr.check_returncode()
 
     def _umount_partitions(self) -> None:
@@ -100,20 +110,27 @@ class BlockDevice:
         """
         partition_list = self.get_fs_types()
 
+        # pylint: disable=unused-variable
         for key, value in partition_list.items():
             command_list = ["umount", f"/dev/{key}"]
             if self.use_sudo:
-                command_list.insert(0, "sudo")
-            subprocess.run(command_list, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
+                command_list.insert(0, self.SUDO_EXEC)
+            subprocess.run(command_list, stdout=DEVNULL, stderr=DEVNULL, check=False)  # nosec  # noqa: S603
 
-    def get_fs_types(self):
+    def get_fs_types(self) -> dict:
+        """
+        Get partition filesystem type via lsblk.
+
+        :return: fs_types, dict which contain partition name and filesystem type
+
+        """
         disk_name = self.path.split("/")[2]
         fs_types = {}
 
         command_list = [self.LSBLK_EXECUTABLE, "-o", "NAME,TYPE,FSTYPE", "-b", "-J"]
         if self.use_sudo:
-            command_list.insert(0, "sudo")
-        command_output = json.loads(subprocess.check_output(command_list, shell=False))
+            command_list.insert(0, self.SUDO_EXEC)
+        command_output = json.loads(subprocess.check_output(command_list))  # nosec # noqa: S603,DUO116
         all_disks = command_output.get("blockdevices")
 
         for disk in all_disks:
@@ -130,8 +147,8 @@ class BlockDevice:
         """Create the partition table using sfdisk and load partitions."""
         command_list = [self.SFDISK_EXECUTABLE, "--json", self.path]
         if self.use_sudo:
-            command_list.insert(0, "sudo")
-        disk_config = json.loads(subprocess.check_output(command_list, shell=False))
+            command_list.insert(0, self.SUDO_EXEC)
+        disk_config = json.loads(subprocess.check_output(command_list))  # nosec # noqa: S603,DUO116
         self.label = disk_config["partitiontable"]["label"] or None
         self.uuid = disk_config["partitiontable"]["id"] or None
 

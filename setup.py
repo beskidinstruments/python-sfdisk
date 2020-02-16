@@ -1,4 +1,5 @@
-#!/usr/bin/python
+# pylint: skip-file
+# flake8: noqa
 
 # Copyright (c) 2016 - Matt Comben
 #

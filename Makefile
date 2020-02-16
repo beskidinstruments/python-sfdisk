@@ -19,9 +19,9 @@ test: ## Run test via pytest
 
 lint: ## Lint your code and reformat it using black, docstrings, isort and others
 	@echo "\n${BLUE}Applying isort...${NC}\n"
-	@isort apply **/*.py
+	@isort --apply **/*.py
 	@echo "\n{BLUE}Reformat code via black...${NC}\n"
-	@black -l 120 **/*.py
+#	@black -l 120 **/*.py
 	@echo "\n${BLUE}Reformat docstrings via docformatter...${NC}\n"
 	@docformatter --in-place --blank --pre-summary-newline --wrap-summaries 120 --wrap-descriptions 120 **/*.py
 	@echo "\n${BLUE}Running Pylint against source and test files...${NC}\n"
@@ -29,7 +29,7 @@ lint: ## Lint your code and reformat it using black, docstrings, isort and other
 	@echo "\n${BLUE}Running Flake8 against source and test files...${NC}\n"
 	@flake8
 	@echo "\n${BLUE}Running Bandit against source files...${NC}\n"
-	@bandit -r --ini setup.cfg
+	@bandit -r --ini setup.cfg **/*
 
 dependencies: ## List dependencies used in project
 	@echo "\n{BLUE}Show module dependencies ${NC}\n"

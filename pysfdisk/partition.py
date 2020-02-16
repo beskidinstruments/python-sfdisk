@@ -1,3 +1,5 @@
+"""Code for handling information about partitions."""
+
 # Copyright (c) 2016 - Matt Comben
 #
 # This file is part of pysfdisk.
@@ -53,5 +55,11 @@ class Partition:
         for config_name in kwargs:
             setattr(self, config_name, kwargs[config_name])
 
-    def get_partition_number(self):
+    def get_partition_number(self) -> str:
+        """
+        Obtain partition number.
+
+        :return: the partition number
+
+        """
         return self.partition_number
