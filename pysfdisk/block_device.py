@@ -19,12 +19,13 @@ import os
 import json
 import pathlib
 import subprocess
+from typing import Union
 
 from pysfdisk.errors import NotRunningAsRoot, BlockDeviceDoesNotExist
 from pysfdisk.partition import Partition
 
 
-def find_executable(name: str) -> str:
+def find_executable(name: str) -> Union[str, None]:
     """
     Return valid executable path for provided name.
 
@@ -39,6 +40,8 @@ def find_executable(name: str) -> str:
         executable_path = pathlib.Path(path) / name
         if executable_path.exists():
             return executable_path.as_posix()
+
+    return None
 
 
 class BlockDevice:
@@ -73,6 +76,21 @@ class BlockDevice:
         process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=None, shell=False)
         partition_table = process.communicate()[0]
         return partition_table.decode()
+
+    def dump_mbr(self, destination_file: str) -> Union[str, None]:
+        """
+        Dump MBR to file.
+
+        :param destination_file: The name of file to which disk data will be dumped
+        :return: output of dd command
+
+        """
+
+        command_list = ["dd", f"if={self.path}", f"of={destination_file}", "bs=512", "count=1"]
+        if self.use_sudo:
+            command_list.insert(0, "sudo")
+        save_mbr = subprocess.run(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        return save_mbr.check_returncode()
 
     def _read_partition_table(self):
         """Create the partition table using sfdisk and load partitions."""
