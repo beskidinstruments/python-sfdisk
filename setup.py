@@ -35,7 +35,12 @@ setup(
     version=version,
     license="GNU GENERAL PUBLIC LICENSE",
     author="Matt Comben, Tomasz Szuster",
-    platforms="any",
     author_email="matthew@dockstudios.co.uk, tomasz.szuster@gmail.com",
+    url="https://github.com/beskidinstruments/python-sfdisk",
     packages=list(find_packages()),
+    classifiers=[
+        "Programming Language :: Python :: 3.6",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: POSIX :: Linux",
+    ]
 )
