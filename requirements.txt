@@ -19,6 +19,5 @@ flake8-pytest-style
 flake8-quotes
 flake8-requirements
 flake8-rst-docstrings
-
 fastlogging
 readline

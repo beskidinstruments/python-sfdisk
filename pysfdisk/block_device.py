@@ -5,7 +5,12 @@ Providing data about partition types, filesystem, create backup of mbr, partitio
 
 """
 
-# Copyright (c) 2016 - Matt Comben
+# Authors
+#
+# - pre-alpha 0.0.1 2016 - Matt Comben
+# - GA 1.0.0 2020 - Tomasz Szuster
+#
+# Copyrigh (c)
 #
 # This file is part of pysfdisk.
 #

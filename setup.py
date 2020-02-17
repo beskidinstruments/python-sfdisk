@@ -1,7 +1,12 @@
 # pylint: skip-file
 # flake8: noqa
 
-# Copyright (c) 2016 - Matt Comben
+# Authors
+#
+# - pre-alpha 0.0.1 2016 - Matt Comben
+# - GA 1.0.0 2020 - Tomasz Szuster
+#
+# Copyrigh (c)
 #
 # This file is part of pysfdisk.
 #
@@ -29,8 +34,8 @@ setup(
     name="pysfdisk",
     version=version,
     license="GNU GENERAL PUBLIC LICENSE",
-    author="Matt Comben",
+    author="Matt Comben, Tomasz Szuster",
     platforms="any",
-    author_email="matthew@dockstudios.co.uk",
+    author_email="matthew@dockstudios.co.uk, tomasz.szuster@gmail.com",
     packages=list(find_packages()),
 )
