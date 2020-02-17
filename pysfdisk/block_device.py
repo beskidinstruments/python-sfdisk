@@ -25,6 +25,7 @@ Providing data about partition types, filesystem, create backup of mbr, partitio
 import os
 import json
 import pathlib
+import tempfile
 import subprocess  # nosec # noqa: S404
 from typing import Union
 from subprocess import PIPE, DEVNULL  # nosec # noqa: S404
@@ -54,11 +55,12 @@ def find_executable(name: str) -> Union[str, classmethod]:
 class BlockDevice:
     """Provide interface to obtain and set partition tables."""
 
-    SFDISK_EXECUTABLE = find_executable(name="sfdisk")
-    DD_EXECUTABLE = find_executable(name="dd")
-    LSBLK_EXECUTABLE = find_executable(name="lsblk")
-    PXZ_EXECUTABLE = find_executable(name="pxz")
+    DD_EXEC = find_executable(name="dd")
+    LSBLK_EXEC = find_executable(name="lsblk")
+    PXZ_EXEC = find_executable(name="pxz")
+    SFDISK_EXEC = find_executable(name="sfdisk")
     SUDO_EXEC = find_executable(name="sudo")
+    TAR_EXEC = find_executable(name="tar")
 
     def __init__(self, path, use_sudo=False):
         """Set member variables, perform checks and obtain the initial partition table."""
@@ -73,6 +75,7 @@ class BlockDevice:
         self._ensure_exists()
         self._read_partition_table()
         self._umount_partitions()
+        self._temp_dir = tempfile.mkdtemp(dir=tempfile.gettempdir())
 
     def get_partitions(self):
         """Return the partition objects for the block object."""
@@ -80,7 +83,7 @@ class BlockDevice:
 
     def dump_partition_table(self):
         """Dump partition table to string."""
-        command_list = [self.SFDISK_EXECUTABLE, "-d", self.path]
+        command_list = [self.SFDISK_EXEC, "-d", self.path]
         if self.use_sudo:
             command_list.insert(0, self.SUDO_EXEC)
         process = subprocess.Popen(command_list, stdout=PIPE)  # nosec # noqa: S603,DUO116
@@ -95,17 +98,35 @@ class BlockDevice:
         :return: output of dd command
 
         """
-        command_list = [self.DD_EXECUTABLE, f"if={self.path}", f"of={destination_file}", "bs=512", "count=1"]
+        command_list = [
+            self.DD_EXEC,
+            f"if={self.path}",
+            f"of={self._temp_dir}/{destination_file}",
+            "bs=512",
+            "count=1"
+        ]
         if self.use_sudo:
             command_list.insert(0, self.SUDO_EXEC)
         save_mbr = subprocess.run(command_list, stdout=PIPE, stderr=PIPE, check=True)  # nosec # noqa: S603,DUO116
         return save_mbr.check_returncode()
 
-    def dump_partitions(self, directory: str) -> dict:
+    def _change_file_permissions(self, file_name: str):
+        """
+        Change file permission for provided file name.
+
+        :param file_name: The name of file on which new permissions be applied
+        :return:
+
+        """
+        command_list = ["chmod", "644", f"{self._temp_dir}/{file_name}"]  # nosec # noqa: S603,DUO116
+        if self.use_sudo:
+            command_list.insert(0, self.SUDO_EXEC)
+        return subprocess.check_output(command_list)  # nosec # noqa: S603,DUO116
+
+    def dump_partitions(self) -> dict:
         """
         Create backup of the partition to file via partclone.
 
-        :param directory: The directory path to which partition backup will be saved
         :return: dict which contains name of partition and file path to which backup was saved
 
         """
@@ -124,7 +145,7 @@ class BlockDevice:
                     "-s",
                     f"/dev/{partition}",
                     "-o",
-                    f"{directory}/{partition}",
+                    f"{self._temp_dir}/{partition}",
                 ]
             elif fs_type == "ext4":
                 command_list = [
@@ -134,18 +155,52 @@ class BlockDevice:
                     "-s",
                     f"/dev/{partition}",
                     "-o",
-                    f"{directory}/{partition}",
+                    f"{self._temp_dir}/{partition}",
                 ]
-            destination_files[partition] = f"{directory}/{partition}"
+            destination_files[partition] = f"{self._temp_dir}/{partition}"
 
             if self.use_sudo:
                 command_list.insert(0, self.SUDO_EXEC)
                 subprocess.run(command_list, check=True)  # nosec # noqa: S603,DUO116
 
-                # pylint: disable=line-too-long
-                subprocess.check_output([self.SUDO_EXEC, "chmod", "644", f"{directory}/{partition}"])  # nosec # noqa: S603,DUO116
+                self._change_file_permissions(file_name=partition)
 
         return destination_files
+
+    def _delete_temp_dir(self) -> None:
+
+        command_list = ["rm", "-rf", self._temp_dir]
+        if self.use_sudo:
+            command_list.insert(0, self.SUDO_EXEC)
+        subprocess.check_output(command_list)  # nosec # noqa: S603,DUO116
+
+    def compress_dumped_partitions(self, target_dir: str, file_name: str = "compressed_partitions") -> str:
+        """
+        Compress files via pxz https://www.linuxlinks.com/pxz-parallel-lzma-compressor-liblzma/.
+
+        :param target_dir: The name of directory in which archive will be placed
+        :param file_name: The name of compressed archive
+        :return: full path to the compressed archive
+
+        """
+        command_list = [
+            self.TAR_EXEC,
+            "-I",
+            self.PXZ_EXEC,
+            "-cf",
+            f"{target_dir}/{file_name}.tar.xz",
+            "-C",
+            self._temp_dir,
+            "."
+        ]
+        if self.use_sudo:
+            command_list.insert(0, self.SUDO_EXEC)
+            subprocess.check_output(command_list)  # nosec # noqa: S603
+
+        # Delete temporary directory
+        self._delete_temp_dir()
+
+        return f"{target_dir}/{file_name}.tar.xz"
 
     def _umount_partitions(self) -> None:
         """
@@ -173,7 +228,7 @@ class BlockDevice:
         disk_name = self.path.split("/")[2]
         fs_types = {}
 
-        command_list = [self.LSBLK_EXECUTABLE, "-o", "NAME,TYPE,FSTYPE", "-b", "-J"]
+        command_list = [self.LSBLK_EXEC, "-o", "NAME,TYPE,FSTYPE", "-b", "-J"]
         if self.use_sudo:
             command_list.insert(0, self.SUDO_EXEC)
         command_output = json.loads(subprocess.check_output(command_list))  # nosec # noqa: S603,DUO116
@@ -191,7 +246,7 @@ class BlockDevice:
 
     def _read_partition_table(self):
         """Create the partition table using sfdisk and load partitions."""
-        command_list = [self.SFDISK_EXECUTABLE, "--json", self.path]
+        command_list = [self.SFDISK_EXEC, "--json", self.path]
         if self.use_sudo:
             command_list.insert(0, self.SUDO_EXEC)
         disk_config = json.loads(subprocess.check_output(command_list))  # nosec # noqa: S603,DUO116
@@ -201,6 +256,22 @@ class BlockDevice:
         for partition_config in disk_config["partitiontable"]["partitions"]:
             partition = Partition.load_from_sfdisk_output(partition_config, self)
             self.partitions[partition.get_partition_number()] = partition
+
+    def run(self, mbr_filename: str, target_dir: str) -> str:
+        """
+        Create archive from disk partitions.
+
+        :param mbr_filename: The name of file which will contain mbr data
+        :param target_dir: The name of directory in which compressed archive will be placed
+        :return: The full path to the compressed archive file
+
+        """
+        with open(f"{self._temp_dir}/partition_table", "w") as file:
+            file.write(self.dump_partition_table())
+        self.dump_mbr(destination_file=mbr_filename)
+        self.dump_partitions()
+        compressed_file_name = self.compress_dumped_partitions(target_dir=target_dir)
+        return compressed_file_name
 
     def _ensure_exists(self):
         if not os.path.exists(self.path):
