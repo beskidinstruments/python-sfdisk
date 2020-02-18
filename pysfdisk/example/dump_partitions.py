@@ -1,3 +1,6 @@
+# pylint: skip-file
+# flake8: noqa
+
 from block_device import BlockDevice
 from fastlogging import LogInit
 

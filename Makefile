@@ -1,5 +1,8 @@
 # The binary to build (just the basename).
 MODULE := pysfdisk
+SONAR_QUBE_URL=${sonar_qube_url}
+SONAR_QUBE_KEY=${sonar_qube_key}
+
 
 # This version-strategy uses git tags to set the version string
 TAG := $(shell git describe --tags --always --dirty)
@@ -30,6 +33,8 @@ lint: ## Lint your code and reformat it using black, docstrings, isort and other
 	@flake8
 	@echo "\n${BLUE}Running Bandit against source files...${NC}\n"
 	@bandit -r --ini setup.cfg **/*
+	@echo "\n${BLUE}Running sonar-scanner ...${NC}\n"
+	@sonar-scanner -Dsonar.projectKey=$(MODULE) -Dsonar.sources=. -Dsonar.host.url=$(SONAR_QUBE_URL) -Dsonar.login=$(SONAR_QUBE_KEY) -Dsonar.exclusions=**\test*
 
 dependencies: ## List dependencies used in project
 	@echo "\n{BLUE}Show module dependencies ${NC}\n"
