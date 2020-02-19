@@ -14,28 +14,49 @@ Module will work only on Linux OS'es, required executables used in this module:
 Please ensure that you have installed above
 
 
-# Install
+## Install
+```
+git clone https://github.com/beskidinstruments/python-sfdisk
+sudo pip install ./
+```
 
-    git clone https://github.com/MatthewJohn/python-sfdisk
-    sudo pip install ./
 
 
-# Example
+## Example
+```python
+import pysfdisk
+```    
 
-    import pysfdisk
-    
-    # Create block device object for the disk
-    >>> disk = pysfdisk.BlockDevice(path='/dev/nvme0n1')
 
-    # Optionally, if not using root and sudo is available, use this
-    >>> disk = pysfdisk.BlockDevice(path='/dev/nvme0n1', use_sudo=True)
+Create block device object for the disk
+```python
+disk = pysfdisk.BlockDevice(path='/dev/nvme0n1')
+```
 
-    # Partitions information is automatically loaded
-    >>> disk.get_partitions()['0'].uuid
-    403ACCB2-0B00-465F-B190-B59C45CFD860
-    
-    # Create archive from all partitions via partclone
-    >>> disk.run(mbr_filename="mbr_file", target_dir="/home/user/Desktop")
+
+Optionally, if not using root and sudo is available, use this
+```python
+disk = pysfdisk.BlockDevice(path='/dev/nvme0n1', use_sudo=True)
+```
+
+
+Partitions information is automatically loaded
+```python
+disk.get_partitions()['0'].uuid
+403ACCB2-0B00-465F-B190-B59C45CFD860
+```
+
+Read partitions table.
+
+```python
+disk.read_partition_table()
+```
+
+Create compressed archive from all partitions.
+```python
+disk.run(mbr_filename="mbr_file", target_dir="/home/user/Desktop")
+```
+
     
 For more examples please use files in the example directory
 

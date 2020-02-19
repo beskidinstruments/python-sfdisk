@@ -24,7 +24,7 @@
 
 import re
 
-from pysfdisk.errors import MissingAttribute
+from pysfdisk.errors import MissingAttribute  # noqa: I900
 
 
 class Partition:

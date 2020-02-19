@@ -35,8 +35,8 @@ import subprocess  # nosec # noqa: S404
 from typing import Union
 from subprocess import PIPE, DEVNULL  # nosec # noqa: S404
 
-from pysfdisk.errors import NotRunningAsRoot, BlockDeviceDoesNotExist
-from pysfdisk.partition import Partition
+from pysfdisk.errors import NotRunningAsRoot, BlockDeviceDoesNotExist  # noqa: I900
+from pysfdisk.partition import Partition  # noqa: I900
 
 
 def find_executable(name: str) -> Union[str, classmethod]:
@@ -86,8 +86,8 @@ class BlockDevice:
         """Return the partition objects for the block object."""
         return self.partitions
 
-    def dump_partition_table(self):
-        """Dump partition table to string."""
+    def read_partition_table(self):
+        """Read partition table to string."""
         command_list = [self.SFDISK_EXEC, "-d", self.path]
         if self.use_sudo:
             command_list.insert(0, self.SUDO_EXEC)
@@ -272,7 +272,7 @@ class BlockDevice:
 
         """
         with open(f"{self._temp_dir}/partition_table", "w") as file:
-            file.write(self.dump_partition_table())
+            file.write(self.read_partition_table())
         self.dump_mbr(destination_file=mbr_filename)
         self.dump_partitions()
         compressed_file_name = self.compress_dumped_partitions(target_dir=target_dir)
