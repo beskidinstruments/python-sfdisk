@@ -20,7 +20,7 @@ if __name__ == "__main__":
     partition_table_file = "partition_table_file"
     logger.info("Dumping partition tables via sfdisk to file: %s", partition_table_file)
     with open(partition_table_file, "w") as dump_file:
-        dump_file.write(disk.dump_partition_table())
+        dump_file.write(disk.read_partition_table())
 
     mbr_file_name = "mbr_file"
     logger.info("Dumping the MBR to file: %s", mbr_file_name)
