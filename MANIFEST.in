@@ -1,0 +1,4 @@
+exclude pysfdisk/test*.py
+exclude pyproject.toml
+include VERSION
+include pysfdisk/example/*

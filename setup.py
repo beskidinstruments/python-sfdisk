@@ -23,24 +23,33 @@
 # You should have received a copy of the GNU General Public License
 # along with pysfdisk.  If not, see <http://www.gnu.org/licenses/>
 
-from setuptools import setup, find_packages
+from setuptools import setup
+from os import path
 
-import pysfdisk
+# The directory containing this file
+HERE = path.abspath(path.dirname(__file__))
 
-with open("VERSION", "r") as version_fh:
+# The text of the README file
+with open(path.join(HERE, "README.rst")) as fid:
+    long_description = fid.read()
+
+with open(path.join(HERE, "VERSION")) as version_fh:
     version = version_fh.read()
 
 setup(
-    name="pysfdisk",
-    version=version,
-    license="GNU GENERAL PUBLIC LICENSE",
     author="Matt Comben, Tomasz Szuster",
     author_email="matthew@dockstudios.co.uk, tomasz.szuster@gmail.com",
-    url="https://github.com/beskidinstruments/python-sfdisk",
-    packages=list(find_packages()),
+    long_description=long_description,
+    long_description_content_type="text/x-rst",
     classifiers=[
         "Programming Language :: Python :: 3.6",
         "License :: OSI Approved :: MIT License",
         "Operating System :: POSIX :: Linux",
-    ]
+    ],
+    license="GNU GENERAL PUBLIC LICENSE",
+    name="py-disk-imager",
+    packages=["pysfdisk"],
+    url="https://github.com/beskidinstruments/python-sfdisk",
+    version=version,
+    include_package_data=True,
 )
