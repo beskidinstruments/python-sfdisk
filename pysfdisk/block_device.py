@@ -103,13 +103,7 @@ class BlockDevice:
         :return: output of dd command
 
         """
-        command_list = [
-            self.DD_EXEC,
-            f"if={self.path}",
-            f"of={self._temp_dir}/{destination_file}",
-            "bs=512",
-            "count=1"
-        ]
+        command_list = [self.DD_EXEC, f"if={self.path}", f"of={self._temp_dir}/{destination_file}", "bs=512", "count=1"]
         if self.use_sudo:
             command_list.insert(0, self.SUDO_EXEC)
         save_mbr = subprocess.run(command_list, stdout=PIPE, stderr=PIPE, check=True)  # nosec # noqa: S603,DUO116
@@ -196,7 +190,7 @@ class BlockDevice:
             f"{target_dir}/{file_name}.tar.xz",
             "-C",
             self._temp_dir,
-            "."
+            ".",
         ]
         if self.use_sudo:
             command_list.insert(0, self.SUDO_EXEC)

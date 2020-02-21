@@ -12,11 +12,7 @@ if __name__ == "__main__":
     print(archive_name)
 
     # More complicated but with logging capabilities via fastlogging
-    logger = LogInit(
-        console=True,
-        colors=True,
-        useThreads=True,
-    )
+    logger = LogInit(console=True, colors=True, useThreads=True)
     partition_table_file = "partition_table_file"
     logger.info("Dumping partition tables via sfdisk to file: %s", partition_table_file)
     with open(partition_table_file, "w") as dump_file:
