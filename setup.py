@@ -1,5 +1,6 @@
-# pylint: skip-file
-# flake8: noqa
+"""
+Setup.
+"""
 
 # Authors
 #
@@ -23,23 +24,24 @@
 # You should have received a copy of the GNU General Public License
 # along with pysfdisk.  If not, see <http://www.gnu.org/licenses/>
 
-from setuptools import setup
 from os import path
+from setuptools import setup
+
 
 # The directory containing this file
 HERE = path.abspath(path.dirname(__file__))
 
 # The text of the README file
 with open(path.join(HERE, "README.rst")) as fid:
-    long_description = fid.read()
+    LONG_DESCRIPTION = fid.read()
 
 with open(path.join(HERE, "VERSION")) as version_fh:
-    version = version_fh.read()
+    VERSION = version_fh.read()
 
 setup(
     author="Matt Comben, Tomasz Szuster",
     author_email="matthew@dockstudios.co.uk, tomasz.szuster@gmail.com",
-    long_description=long_description,
+    long_description=LONG_DESCRIPTION,
     long_description_content_type="text/x-rst",
     classifiers=[
         "Programming Language :: Python :: 3.6",
@@ -52,6 +54,6 @@ setup(
     name="py-disk-imager",
     packages=["pysfdisk"],
     url="https://github.com/beskidinstruments/python-sfdisk",
-    version=version,
+    version=VERSION,
     include_package_data=True,
 )
