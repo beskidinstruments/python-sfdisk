@@ -22,7 +22,7 @@ test: ## Run test via pytest
 
 lint: ## Lint your code and reformat it using black, docstrings, isort and others
 	@echo "\n${BLUE}Applying isort...${NC}\n"
-	@isort --apply **/*.py
+	@isort --apply -rc
 	@echo "\n${BLUE} Reformat code via black...${NC}\n"
 	@black -l 120 **/*.py
 	@echo "\n${BLUE}Reformat docstrings via docformatter...${NC}\n"
@@ -33,6 +33,8 @@ lint: ## Lint your code and reformat it using black, docstrings, isort and other
 	@flake8
 	@echo "\n${BLUE}Running Bandit against source files...${NC}\n"
 	@bandit -r --ini setup.cfg **/*
+	@echo "\n${BLUE}Scan vounerabilities via snyk.io...${NC}\n"
+	@snyk test --file=requirements.txt --package-manager=pip
 	@echo "\n${BLUE}Running sonar-scanner ...${NC}\n"
 	@sonar-scanner -Dsonar.projectKey=$(MODULE) -Dsonar.sources=. -Dsonar.host.url=$(SONAR_QUBE_URL) -Dsonar.login=$(SONAR_QUBE_KEY) -Dsonar.exclusions=**\test*
 
