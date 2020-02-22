@@ -1,6 +1,4 @@
-"""
-Setup.
-"""
+"""Setup."""
 
 # Authors
 #
@@ -25,8 +23,8 @@ Setup.
 # along with pysfdisk.  If not, see <http://www.gnu.org/licenses/>
 
 from os import path
-from setuptools import setup
 
+from setuptools import setup
 
 # The directory containing this file
 HERE = path.abspath(path.dirname(__file__))
