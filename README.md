@@ -1,6 +1,9 @@
 # PYsfdisk
 
+[![Known Vulnerabilities](https://snyk.io/test/github/beskidinstruments/python-sfdisk/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/beskidinstruments/python-sfdisk?targetFile=requirements.txt)
+
 A Python API for linux sfdisk utility
+
 
 Note: 
 Module will work only on Linux OS'es, required executables used in this module:
